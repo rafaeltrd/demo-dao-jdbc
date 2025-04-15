@@ -6,10 +6,7 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +21,46 @@ public class SellerDaoJDBC implements SellerDao {
     }
 
     @Override
-    public void insert(Seller obj) {
+    public void insert(Seller seller) {
+        PreparedStatement st = null;
+        try{
+            st = connection.prepareStatement("""
+                    INSERT INTO seller
+                    (Name, Email, BirthDate, BaseSalary, DepartmentId)
+                    VALUES
+                    (?, ?, ?, ?, ?)""",
+                    Statement.RETURN_GENERATED_KEYS);
+
+            st.setString(1, seller.getName());
+            st.setString(2, "Email");
+            st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+            st.setDouble(4, seller.getBaseSalary());
+            st.setInt(5, seller.getDepartment().getId());
+
+            int rowsAffected = st.executeUpdate();
+
+            if(rowsAffected > 0){
+                ResultSet rs = st.getGeneratedKeys();
+                if(rs.next()){
+                    int id = rs.getInt(1);
+                    seller.setId(id);
+                }
+                DB.closeResultSet(rs);
+            }else {
+                throw new DbException("Unexpected error! No rows affected!");
+            }
+
+        }catch (SQLException e){
+            throw new DbException("Error message: " + e.getMessage());
+
+        }finally {
+            DB.closeStatement(st);
+        }
 
     }
 
     @Override
-    public void update(Seller obj) {
+    public void update(Seller seller) {
 
     }
 
@@ -53,13 +84,14 @@ public class SellerDaoJDBC implements SellerDao {
             rs = st.executeQuery();
             if(rs.next()){
                 Department department = instatiateDepartment(rs);
-                Seller seller = instatiateSeller(rs, department);
 
-                return seller;
+                return instatiateSeller(rs, department);
             }
             return null;
+
         }catch (SQLException e){
             throw new DbException("Error message: " + e.getMessage());
+
         }finally {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
@@ -115,8 +147,10 @@ public class SellerDaoJDBC implements SellerDao {
                 list.add(seller);
             }
             return list;
+
         }catch (SQLException e){
             throw new DbException("Error message: " + e.getMessage());
+
         }finally {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
@@ -154,8 +188,10 @@ public class SellerDaoJDBC implements SellerDao {
                 list.add(seller);
             }
             return list;
+
         }catch (SQLException e){
             throw new DbException("Error message: " + e.getMessage());
+
         }finally {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
