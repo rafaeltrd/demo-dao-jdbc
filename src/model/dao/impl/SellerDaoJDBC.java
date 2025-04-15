@@ -32,7 +32,7 @@ public class SellerDaoJDBC implements SellerDao {
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setString(1, seller.getName());
-            st.setString(2, "Email");
+            st.setString(2, seller.getEmail()); //Correção getEmail
             st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
             st.setDouble(4, seller.getBaseSalary());
             st.setInt(5, seller.getDepartment().getId());
@@ -70,7 +70,7 @@ public class SellerDaoJDBC implements SellerDao {
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setString(1, seller.getName());
-            st.setString(2, "Email");
+            st.setString(2, seller.getEmail()); //Correção getEmail
             st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
             st.setDouble(4, seller.getBaseSalary());
             st.setInt(5, seller.getDepartment().getId());
@@ -88,7 +88,22 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public void deleteById(Integer id) {
+        PreparedStatement st = null;
+        try{
+            st = connection.prepareStatement("DELETE FROM seller WHERE Id = ?");
+            st.setInt(1, id);
 
+            int affectedRows = st.executeUpdate();
+
+            if(affectedRows == 0){
+                throw new DbException("Error: ID not found");
+            }
+
+        }catch (SQLException e){
+            throw new DbException("Error message: " + e.getMessage());
+        }finally {
+            DB.closeStatement(st);
+        }
     }
 
     @Override
