@@ -70,7 +70,24 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public void deleteById(Integer id) {
+        PreparedStatement st = null;
 
+        try{
+            st = connection.prepareStatement("DELETE FROM department WHERE Id = ?");
+            st.setInt(1, id);
+
+            int affectedRows = st.executeUpdate();
+
+            if(affectedRows == 0){
+                throw new DbException("Error! Id not found!");
+            }
+
+        }catch (SQLException e){
+            throw new DbException("Error message: " + e.getMessage());
+
+        }finally {
+            DB.closeStatement(st);
+        }
     }
 
     @Override
