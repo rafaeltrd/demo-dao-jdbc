@@ -30,7 +30,7 @@ public class Program {
             System.out.println(s);
         }
 
-        System.out.println("\n==== TEST 3: seller findByDepartment: ====");
+        System.out.println("\n==== TEST 3: seller findByAll: ====");
 
         list = sellerDao.findAll();
 
